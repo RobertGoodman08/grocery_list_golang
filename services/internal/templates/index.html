@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Список покупок</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+<body>
+
+
+<style >
+    .center-dev {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .center-dev .row {
+        margin: 0;
+    }
+
+
+
+</style>
+
+
+
+<div class="center-dev">
+
+
+    <h3 class="left_h3">
+        Список покупок
+    </h3>
+
+    <div class="row g-0 text-center">
+        <div class="col-sm-6 col-md-8">
+
+            <div class="container px-4 text-center">
+                <div class="row gx-5">
+                    {{range .}}
+                        <div class="col">
+                            <div class="p-3">
+
+                                <div class="card" style="width: 18rem;">
+                                    <div class="form-check">
+
+
+                                        <div class="form-check mr-4" style="margin-left: -200px">
+                                            <input  class="form-check-input" type="checkbox" value="{{ .ID }}" id="flexCheckDefault" {{ if .IsChecked }}checked{{ end }}>
+                                            <label class="form-check-label" for="flexCheckDefault">
+                                            </label>
+                                        </div>
+
+
+
+
+                                        <script>
+                                            document.addEventListener('DOMContentLoaded', function() {
+                                                var checkboxes = document.querySelectorAll('.form-check-input');
+                                                checkboxes.forEach(function(checkbox) {
+                                                    checkbox.addEventListener('change', function() {
+                                                        var id = this.value;
+                                                        var isChecked = this.checked;
+                                                        var xhr = new XMLHttpRequest();
+                                                        xhr.open('PUT', '/check_product/' + id, true);
+                                                        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                                                        xhr.onreadystatechange = function() {
+                                                            if (xhr.readyState === XMLHttpRequest.DONE) {
+                                                                if (xhr.status === 200) {
+                                                                    location.reload(); // Перезагрузить страницу
+                                                                } else {
+                                                                    alert('Ошибка при обновлении продукта: ' + xhr.statusText);
+                                                                }
+                                                            }
+                                                        };
+                                                        xhr.send('is_checked=' + isChecked);
+                                                    });
+                                                });
+                                            });
+                                        </script>
+
+
+
+
+                                        <label class="form-check-label" >
+                                            <img src="{{.ImageURL}}" class="card-img-top" alt="..." style="width: 100px; height: 100px">
+                                        </label>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ .Name }}</h5>
+                                    </div>
+                                    <button class="btn btn-danger" onclick="deleteProduct({{.ID}})">Удалить</button>
+
+                                    <script>
+                                        function deleteProduct(id) {
+                                            var xhr = new XMLHttpRequest();
+                                            xhr.open("DELETE", "/remove-from-cart/" + id, true);
+                                            xhr.onreadystatechange = function () {
+                                                if (xhr.readyState === XMLHttpRequest.DONE) {
+                                                    if (xhr.status === 200) {
+                                                        location.reload();
+                                                    } else {
+                                                        alert("Ошибка при удалении продукта: " + xhr.statusText);
+                                                    }
+                                                }
+                                            };
+                                            xhr.send();
+                                        }
+                                    </script>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    {{ end }}
+
+                </div>
+            </div>
+
+        </div>
+        <div class="col-6 col-md-4">
+
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Имя товара</th>
+                    <th scope="col">Цена</th>
+                    <th scope="col">Количество</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{ range $index, $element := . }}
+                <tr>
+                    <th scope="row" class="row-number">{{$index }}</th>
+                    <td>{{ $element.Name }}</td>
+                    <td class="unit-price">{{ $element.UnitPrice }}</td>
+                    <td>{{ $element.Quantity }}</td>
+                </tr>
+                {{ end }}
+                </tbody>
+
+            </table>
+            <div class="d-grid gap-2">
+                <div id="total-price" class="btn btn-primary">
+                    Итого: <span id="total-amount">0.00</span>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+
+
+        <!-- Добавляем скрипт после таблицы -->
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+            var unitPriceElements = document.getElementsByClassName("unit-price");
+            var totalPrice = 0;
+            for (var i = 0; i < unitPriceElements.length; i++) {
+            var unitPrice = parseFloat(unitPriceElements[i].textContent);
+            totalPrice += unitPrice;
+        }
+
+            var totalAmountElement = document.getElementById("total-amount");
+            totalAmountElement.textContent = totalPrice.toFixed(2);
+        });
+    </script>
+
+
+
+</div>
+
+
+
+
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addItemModal">
+    Добавить товар
+</button>
+
+<!-- Модальное окно -->
+<div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addItemModalLabel">Добавление товара в корзину</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Форма для ввода данных -->
+                <form id="addProductForm" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="name">Название товара</label>
+                        <input type="text" class="form-control" id="name" name="name">
+                    </div>
+                    <div class="form-group">
+                        <label for="image_url">URL изображения</label>
+                        <input type="file" class="form-control" id="image_url" name="image_url">
+                    </div>
+                    <div class="form-group">
+                        <label for="quantity">Количество</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity">
+                    </div>
+                    <div class="form-group">
+                        <label for="unit_price">Цена</label>
+                        <input type="number" class="form-control" id="unit_price" name="unit_price">
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" name="is_checked" id="is_checked">
+                        <label class="form-check-label" for="flexCheckIndeterminate">
+                            isChecked
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="closeButton">Закрыть</button>
+                <button type="button" class="btn btn-primary" id="addProductButton">Добавить товар</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.getElementById('closeButton').addEventListener('click', function() {
+        window.location.reload();
+    });
+</script>
+
+
+<script>
+    document.getElementById('addProductButton').addEventListener('click', function() {
+        var formData = new FormData(document.getElementById('addProductForm'));
+
+        fetch('/add-product', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    });
+
+</script>
+
+
+
+
+
+
+
+<!--<div class="card mb-3" style="max-width: 540px;">-->
+<!--    <div class="row g-0">-->
+<!--        <div class="col-md-8">-->
+<!--            <div class="card-body">-->
+<!--                <h5 class="card-title">-->
+<!--                    <div class="form-check">-->
+<!--                        <input class="form-check-input" type="checkbox" value="" id="flexCheckIndeterminate">-->
+<!--                        <label class="form-check-label" for="flexCheckIndeterminate">-->
+<!--                            Молоко-->
+<!--                        </label>-->
+<!--                    </div>-->
+<!--                </h5>-->
+<!--                <p class="card-text">1 л</p>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--        <div class="col-md-4">-->
+<!--            <img src="/static/images/illustration_practice_java-1.jpg" class="img-fluid rounded-start" alt="...">-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+
+
+</body>
+
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</html>
