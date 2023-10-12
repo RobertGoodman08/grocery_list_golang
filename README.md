@@ -35,10 +35,10 @@
    ```go
    const (
        dbHost     = "localhost"
-       dbPort     = you port
-       dbUser     = "you user"
-       dbPassword = "you password"
-       dbName     = "go dbname"
+       dbPort     = your  port
+       dbUser     = "your  user"
+       dbPassword = "your  password"
+       dbName     = "your  dbname"
    )
    ```
 
