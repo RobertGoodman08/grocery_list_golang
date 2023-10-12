@@ -11,10 +11,10 @@ var db *sql.DB
 
 const (
 	dbHost     = "localhost"
-	dbPort     = 5432
-	dbUser     = "postgres"
-	dbPassword = "93381022"
-	dbName     = "go_grocery_basket_planner"
+	dbPort     = your  port
+	dbUser     = "your ursername"
+	dbPassword = "your password"
+	dbName     = "your dbname"
 )
 
 func init() {
